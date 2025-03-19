@@ -239,6 +239,38 @@
         .fire-detected {
             animation: blink 1s infinite;
         }
+        /* Rain Sensor Styles */
+        .rain-light {
+            background-color: #3498db;
+        }
+        .rain-heavy {
+            background-color: #2980b9;
+        }
+        .rain-popup {
+            background: #3498db;
+            color: white;
+        }
+        .rain-heavy-popup {
+            background: #2980b9;
+            color: white;
+        }
+        /* Updated Rain Animations */
+        @keyframes lightRain {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes heavyRain {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .rain-light-animation {
+            animation: lightRain 1s ease-in-out;
+        }
+        .rain-heavy-animation {
+            animation: heavyRain 1s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -429,6 +461,23 @@
                         <span id="vibrationStatusText">All quiet</span>
                     </div>
                 </div>
+                
+                <!-- Rain Status Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background-color: #00bcd4;">
+                            <i class="fas fa-cloud-rain"></i>
+                        </div>
+                        <div class="card-title">Rain Status</div>
+                    </div>
+                    <div class="card-value">
+                        <span class="status-badge" id="rainStatusBadge" style="background-color: #27ae60;">No Rain</span>
+                    </div>
+                    <div class="card-status" style="margin-top: 20px;">
+                        <span class="status-icon" id="rainStatusIcon"><i class="fas fa-sun"></i></span>
+                        <span id="rainStatusText">Clear weather</span>
+                    </div>
+                </div>
             </div>
             
             <div class="charts-container">
@@ -511,11 +560,11 @@
         const sensorActivitiesChart = new Chart(sensorActivitiesCtx, {
             type: 'bar',
             data: {
-                labels: ['Motion', 'Door', 'Fire', 'LPG', 'Tilt', 'Vibration'],
+                labels: ['Motion', 'Door', 'Fire', 'LPG', 'Tilt', 'Vibration', 'Rain'],
                 datasets: [{
                     label: 'Activities (last hour)',
-                    data: [0, 0, 0, 0, 0, 0],
-                    backgroundColor: ['#2ecc71', '#9b59b6', '#e74c3c', '#e67e22', '#16a085', '#8e44ad']
+                    data: [0, 0, 0, 0, 0, 0, 0],
+                    backgroundColor: ['#2ecc71', '#9b59b6', '#e74c3c', '#e67e22', '#16a085', '#8e44ad', '#00bcd4']
                 }]
             },
             options: {
@@ -525,6 +574,10 @@
             }
         });
         
+        // Flags for one-time rain popups
+        let lightRainPopupShown = false;
+        let heavyRainPopupShown = false;
+
         // Update dashboard function
         function updateDashboard(data) {
             const waterLevel = data.water_level || 0;
@@ -536,6 +589,7 @@
             const tilt = data.tilt || "No_Tilt";
             const vibration = data.vibration || "No_Vibration";
             const light = data.light || 0;
+            const rain = data.rain || "No_Rain";
 
             // Water Level
             document.getElementById('waterLevel').textContent = waterLevel + '%';
@@ -686,6 +740,42 @@
                 vibrationStatusText.textContent = 'All quiet';
             }
             
+            // Rain Status
+            const rainStatusBadge = document.getElementById('rainStatusBadge');
+            const rainStatusIcon = document.getElementById('rainStatusIcon');
+            const rainStatusText = document.getElementById('rainStatusText');
+            if (rain === 'No_Rain') {
+                rainStatusBadge.textContent = 'No Rain';
+                rainStatusBadge.style.backgroundColor = '#27ae60';
+                rainStatusIcon.innerHTML = '<i class="fas fa-sun"></i>';
+                rainStatusText.textContent = 'Clear weather';
+                document.body.style.backgroundImage = 'url("sunny-background.jpg")';
+            } else if (rain === 'Light_Rain') {
+                rainStatusBadge.textContent = 'Light Rain';
+                rainStatusBadge.style.backgroundColor = '#3498db';
+                rainStatusIcon.innerHTML = '<i class="fas fa-cloud-sun-rain"></i>';
+                rainStatusIcon.classList.add('rain-light-animation');
+                rainStatusText.textContent = 'Light rain detected';
+                document.body.style.backgroundImage = 'url("light-rain-background.jpg")';
+                if (!lightRainPopupShown) {
+                    showRainPopup('There is Rain', 'Checkout for clothes outside!');
+                    lightRainPopupShown = true;
+                }
+                sensorActivitiesChart.data.datasets[0].data[6]++;
+            } else if (rain === 'Heavy_Rain') {
+                rainStatusBadge.textContent = 'Heavy Rain';
+                rainStatusBadge.style.backgroundColor = '#2980b9';
+                rainStatusIcon.innerHTML = '<i class="fas fa-cloud-showers-heavy"></i>';
+                rainStatusIcon.classList.add('rain-heavy-animation');
+                rainStatusText.textContent = 'Heavy rain detected';
+                document.body.style.backgroundImage = 'url("heavy-rain-background.jpg")';
+                if (!heavyRainPopupShown) {
+                    showRainPopup('There is Heavy Rain', 'Staying inside is preferred in this bad weather.', true);
+                    heavyRainPopupShown = true;
+                }
+                sensorActivitiesChart.data.datasets[0].data[6]++;
+            }
+            
             // Update charts
             temperatureChart.data.datasets[0].data.push(temperature);
             temperatureChart.data.datasets[0].data.shift();
@@ -701,6 +791,21 @@
             });
             
             document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+        }
+        
+        // Function to show rain popup
+        function showRainPopup(title, message, isHeavy = false) {
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.innerHTML = `
+                <div class="popup-content ${isHeavy ? 'rain-heavy-popup' : 'rain-popup'}">
+                    <h2>${title}</h2>
+                    <p>${message}</p>
+                    <button class="close-btn" onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            popup.style.display = 'block';
         }
         
         // Close popup function

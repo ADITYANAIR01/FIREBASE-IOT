@@ -15,14 +15,19 @@
 #define TX_PIN 12
 #define LDR_PIN A1
 #define LPG_PIN A2
+#define RAIN A3  // Rain sensor pin
 
 #define DHT_TYPE DHT11
 #define LPG_THRESHOLD 130    
+// Rain threshold constants for 10-bit ADC (0-1023 range)
+const int RAIN_THRESHOLD = 750;    // Light rain threshold
+const int HEAVY_RAIN_THRESHOLD = 500;  // Heavy rain threshold
+const int SAMPLE_COUNT = 10;  // Number of samples for rain sensor averaging
 
 DHT dht(DHT_PIN, DHT_TYPE);
 SoftwareSerial esp(RX_PIN, TX_PIN);
 
-String waterLevel, fireStatus, motionStatus, lpgStatus, irSensorStatus, tiltStatus, vibrationStatus, lightStatus;
+String waterLevel, fireStatus, motionStatus, lpgStatus, irSensorStatus, tiltStatus, vibrationStatus, lightStatus, rainStatus;
 float temperature = 0.0;
 long duration;
 int distanceCm, distancePer;
@@ -42,6 +47,31 @@ void setup() {
   pinMode(VIBRATION_PIN, INPUT);    
   pinMode(LED_PIN, OUTPUT);
   pinMode(LDR_PIN, INPUT);
+  pinMode(RAIN, INPUT);  // Set rain sensor pin as input
+  Serial.println("Rain Sensor Initialized");
+}
+
+// Function to get averaged rain sensor reading
+int getAveragedReading() {
+  long total = 0;
+  for (int i = 0; i < SAMPLE_COUNT; i++) {
+    total += analogRead(RAIN);
+    delay(100);  // Small delay between samples
+  }
+  return total / SAMPLE_COUNT;  // Return averaged value
+}
+
+// Function to determine rain status
+void setRainStatus(int reading) {
+  if (reading >= RAIN_THRESHOLD) {
+    rainStatus = "No_Rain";
+  } 
+  else if (reading >= HEAVY_RAIN_THRESHOLD) {
+    rainStatus = "Light_Rain";
+  } 
+  else {
+    rainStatus = "Heavy_Rain";
+  }
 }
 
 void loop() {
@@ -84,6 +114,10 @@ void loop() {
   int lightValue = analogRead(LDR_PIN);
   lightStatus = String(map(lightValue, 0, 1023, 0, 100));
 
+  // Rain Sensor
+  int rainReading = getAveragedReading();
+  setRainStatus(rainReading);
+
   // Print to Arduino Serial Monitor
   Serial.println("--- Sensor Readings ---");
   Serial.println("Water Level: " + waterLevel + "%");
@@ -95,12 +129,14 @@ void loop() {
   Serial.println("Tilt: " + tiltStatus);
   Serial.println("Vibration: " + vibrationStatus);
   Serial.println("Light: " + lightStatus + "%");
+  Serial.println("Rain: " + rainStatus);
   Serial.println("-----------------------");
 
-  // Send data to ESP32 (exactly 9 values)
+  // Send data to ESP32 (now 10 values)
   String data = waterLevel + "," + motionStatus + "," + String(temperature) + "," + 
                 fireStatus + "," + lpgStatus + "," + irSensorStatus + "," + 
-                tiltStatus + "," + vibrationStatus + "," + lightStatus + "\n";
+                tiltStatus + "," + vibrationStatus + "," + lightStatus + "," + 
+                rainStatus + "\n";
   esp.print(data);
 
   delay(5000); // Update every 5 seconds
