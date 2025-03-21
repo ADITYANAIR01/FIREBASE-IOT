@@ -6,7 +6,6 @@
     <title>Smart Home Sensor Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
@@ -18,6 +17,18 @@
             --warning: #f39c12;
             --dark: #2c3e50;
             --light: #ecf0f1;
+            --background: #f5f7fa;
+            --text: #333;
+            --card-bg: white;
+            --progress-bg: #eee;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        body.dark-mode {
+            --background: #1a1a1a;
+            --text: #ecf0f1;
+            --card-bg: #2c2c2c;
+            --progress-bg: #333;
+            --shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         * {
             margin: 0;
@@ -26,8 +37,9 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            background-color: var(--background);
+            color: var(--text);
+            transition: background-color 0.5s ease;
         }
         .container {
             max-width: 1200px;
@@ -40,7 +52,7 @@
             align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--progress-bg);
         }
         .logo {
             font-size: 24px;
@@ -62,9 +74,9 @@
             margin-bottom: 30px;
         }
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow);
             padding: 20px;
             transition: all 0.3s ease;
         }
@@ -97,6 +109,7 @@
             font-size: 28px;
             font-weight: bold;
             margin: 10px 0;
+            transition: color 0.3s ease;
         }
         .card-status {
             font-size: 14px;
@@ -104,6 +117,7 @@
         }
         .status-icon {
             margin-right: 5px;
+            transition: color 0.3s ease;
         }
         .charts-container {
             display: grid;
@@ -116,9 +130,9 @@
             }
         }
         .chart-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow);
             padding: 20px;
         }
         .chart-header {
@@ -132,25 +146,12 @@
             font-weight: 600;
             color: var(--dark);
         }
-        .time-selector button {
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            padding: 5px 10px;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .time-selector button.active {
-            color: var(--primary);
-            font-weight: 600;
-        }
         .animated-progress {
             height: 10px;
             border-radius: 5px;
             margin: 20px 0;
             overflow: hidden;
-            background: #eee;
+            background: var(--progress-bg);
         }
         .progress-bar {
             height: 100%;
@@ -170,7 +171,7 @@
             text-align: center;
             margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid var(--progress-bg);
             color: #666;
             font-size: 14px;
         }
@@ -182,7 +183,6 @@
         .pulse {
             animation: pulse 0.5s ease-in-out;
         }
-        /* Popup styles */
         .popup {
             display: none;
             position: fixed;
@@ -192,17 +192,28 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .popup.show {
+            display: flex;
+            opacity: 1;
         }
         .popup-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow);
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .popup-content.show {
+            transform: scale(1);
         }
         .popup-content h2 {
             color: var(--danger);
@@ -229,47 +240,27 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s ease;
         }
-        /* Blinking effect */
-        @keyframes blink {
-            0% { background-color: #f5f7fa; }
-            50% { background-color: var(--danger); }
-            100% { background-color: #f5f7fa; }
+        .popup-content .close-btn:hover {
+            background: #c0392b;
         }
-        .fire-detected {
-            animation: blink 1s infinite;
+        .emergency-mode {
+            background-color: #ffcccc;
+            animation: emergencyBlink 1s infinite;
         }
-        /* Rain Sensor Styles */
-        .rain-light {
-            background-color: #3498db;
+        @keyframes emergencyBlink {
+            0% { background-color: #ffcccc; }
+            50% { background-color: #ff6666; }
+            100% { background-color: #ffcccc; }
         }
-        .rain-heavy {
-            background-color: #2980b9;
+        .emergency-mode .card {
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
         }
-        .rain-popup {
-            background: #3498db;
-            color: white;
-        }
-        .rain-heavy-popup {
-            background: #2980b9;
-            color: white;
-        }
-        /* Updated Rain Animations */
-        @keyframes lightRain {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes heavyRain {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .rain-light-animation {
-            animation: lightRain 1s ease-in-out;
-        }
-        .rain-heavy-animation {
-            animation: heavyRain 1s ease-in-out;
+        .theme-toggle {
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--primary);
         }
     </style>
 </head>
@@ -278,19 +269,19 @@
         <!-- Login Form -->
         <div id="login-container">
             <form id="login-form">
-                <div class="form-elements-container" style="text-align: center; padding: 20px;">
+                <div style="text-align: center; padding: 20px;">
                     <label for="input-email"><b>Email</b></label><br>
                     <input type="text" placeholder="Enter Email" id="input-email" required style="padding: 8px; margin: 5px; width: 200px;"><br>
                     <label for="input-password"><b>Password</b></label><br>
                     <input type="password" placeholder="Enter Password" id="input-password" required style="padding: 8px; margin: 5px; width: 200px;"><br>
-                    <button type="submit" id="login-button" style="padding: 10px 20px; background-color: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">Login</button>
+                    <button type="submit" style="padding: 10px 20px; background-color: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">Login</button>
                     <p id="error-message" style="color: red; margin-top: 10px;"></p>
                 </div>
             </form>
         </div>
 
         <!-- Authentication Bar -->
-        <div id="authentication-bar" style="display: none; text-align: right; padding: 10px; background-color: #ecf0f1;">
+        <div id="authentication-bar" style="display: none; text-align: right; padding: 10px; background-color: var(--progress-bg);">
             <p>Logged in as: <span id="user-details"></span> <a href="#" id="logout-link" style="color: var(--primary);">(logout)</a></p>
         </div>
 
@@ -299,6 +290,9 @@
             <header>
                 <div class="logo">
                     <i class="fas fa-home"></i> Smart Home Monitor
+                </div>
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
                 </div>
                 <div class="last-updated" id="lastUpdated">
                     Last updated: Just now
@@ -462,20 +456,20 @@
                     </div>
                 </div>
                 
-                <!-- Rain Status Card -->
+                <!-- Emergency Button Card -->
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-icon" style="background-color: #00bcd4;">
-                            <i class="fas fa-cloud-rain"></i>
+                        <div class="card-icon" style="background-color: var(--danger);">
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
-                        <div class="card-title">Rain Status</div>
+                        <div class="card-title">Emergency Button</div>
                     </div>
                     <div class="card-value">
-                        <span class="status-badge" id="rainStatusBadge" style="background-color: #27ae60;">No Rain</span>
+                        <span class="status-badge" id="buttonStatusBadge" style="background-color: #27ae60;">OFF</span>
                     </div>
                     <div class="card-status" style="margin-top: 20px;">
-                        <span class="status-icon" id="rainStatusIcon"><i class="fas fa-sun"></i></span>
-                        <span id="rainStatusText">Clear weather</span>
+                        <span class="status-icon" id="buttonStatusIcon"><i class="fas fa-check-circle"></i></span>
+                        <span id="buttonStatusText">No Emergency</span>
                     </div>
                 </div>
             </div>
@@ -484,11 +478,6 @@
                 <div class="chart-card">
                     <div class="chart-header">
                         <div class="chart-title">Temperature History</div>
-                        <div class="time-selector">
-                            <button class="active">1h</button>
-                            <button>6h</button>
-                            <button>24h</button>
-                        </div>
                     </div>
                     <canvas id="temperatureChart"></canvas>
                 </div>
@@ -496,11 +485,6 @@
                 <div class="chart-card">
                     <div class="chart-header">
                         <div class="chart-title">Sensor Activities</div>
-                        <div class="time-selector">
-                            <button class="active">1h</button>
-                            <button>6h</button>
-                            <button>24h</button>
-                        </div>
                     </div>
                     <canvas id="sensorActivitiesChart"></canvas>
                 </div>
@@ -511,13 +495,23 @@
             </div>
         </div>
         
-        <!-- Popup for Fire Detection -->
+        <!-- Fire Popup -->
         <div class="popup" id="firePopup">
             <div class="popup-content">
                 <h2>Fire Detected!</h2>
                 <i class="fas fa-fire fire-logo"></i>
                 <p>Emergency! Please call Fire Station at 101 immediately.</p>
-                <button class="close-btn" onclick="closePopup()">Close</button>
+                <button class="close-btn" onclick="closePopup('firePopup')">Close</button>
+            </div>
+        </div>
+        
+        <!-- Emergency Button Popup -->
+        <div class="popup" id="emergencyPopup">
+            <div class="popup-content" style="background: #ffe6e6;">
+                <h2>Emergency Alert!</h2>
+                <i class="fas fa-exclamation-triangle fire-logo" style="color: var(--danger);"></i>
+                <p>The emergency button has been pressed. Please check the situation immediately.</p>
+                <button class="close-btn" onclick="closePopup('emergencyPopup')">Close</button>
             </div>
         </div>
     </div>
@@ -560,11 +554,11 @@
         const sensorActivitiesChart = new Chart(sensorActivitiesCtx, {
             type: 'bar',
             data: {
-                labels: ['Motion', 'Door', 'Fire', 'LPG', 'Tilt', 'Vibration', 'Rain'],
+                labels: ['Motion', 'Door', 'Fire', 'LPG', 'Tilt', 'Vibration'],
                 datasets: [{
                     label: 'Activities (last hour)',
-                    data: [0, 0, 0, 0, 0, 0, 0],
-                    backgroundColor: ['#2ecc71', '#9b59b6', '#e74c3c', '#e67e22', '#16a085', '#8e44ad', '#00bcd4']
+                    data: [0, 0, 0, 0, 0, 0],
+                    backgroundColor: ['#2ecc71', '#9b59b6', '#e74c3c', '#e67e22', '#16a085', '#8e44ad']
                 }]
             },
             options: {
@@ -573,12 +567,26 @@
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
             }
         });
-        
-        // Flags for one-time rain popups
-        let lightRainPopupShown = false;
-        let heavyRainPopupShown = false;
 
-        // Update dashboard function
+        // Emergency Mode Functions
+        function activateEmergencyMode() {
+            document.body.classList.add('emergency-mode');
+        }
+
+        function deactivateEmergencyMode() {
+            document.body.classList.remove('emergency-mode');
+        }
+
+        // Popup Close Function
+        function closePopup(popupId) {
+            const popup = document.getElementById(popupId);
+            popup.classList.remove('show');
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 300);
+        }
+
+        // Update Dashboard Function
         function updateDashboard(data) {
             const waterLevel = data.water_level || 0;
             const motion = data.motion || "No_Motion";
@@ -589,7 +597,7 @@
             const tilt = data.tilt || "No_Tilt";
             const vibration = data.vibration || "No_Vibration";
             const light = data.light || 0;
-            const rain = data.rain || "No_Rain";
+            const button = data.button || "Button_OFF";
 
             // Water Level
             document.getElementById('waterLevel').textContent = waterLevel + '%';
@@ -644,15 +652,17 @@
                 fireStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 fireStatusText.textContent = 'Emergency! Fire detected';
                 sensorActivitiesChart.data.datasets[0].data[2]++;
-                document.getElementById('firePopup').style.display = 'block';
-                document.body.classList.add('fire-detected');
+                const firePopup = document.getElementById('firePopup');
+                firePopup.style.display = 'flex';
+                setTimeout(() => firePopup.classList.add('show'), 10);
             } else {
                 fireStatusBadge.textContent = 'No Fire';
                 fireStatusBadge.style.backgroundColor = '#27ae60';
                 fireStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 fireStatusText.textContent = 'All clear';
-                document.getElementById('firePopup').style.display = 'none';
-                document.body.classList.remove('fire-detected');
+                const firePopup = document.getElementById('firePopup');
+                firePopup.classList.remove('show');
+                setTimeout(() => firePopup.style.display = 'none', 300);
             }
             
             // Motion Status
@@ -740,43 +750,30 @@
                 vibrationStatusText.textContent = 'All quiet';
             }
             
-            // Rain Status
-            const rainStatusBadge = document.getElementById('rainStatusBadge');
-            const rainStatusIcon = document.getElementById('rainStatusIcon');
-            const rainStatusText = document.getElementById('rainStatusText');
-            if (rain === 'No_Rain') {
-                rainStatusBadge.textContent = 'No Rain';
-                rainStatusBadge.style.backgroundColor = '#27ae60';
-                rainStatusIcon.innerHTML = '<i class="fas fa-sun"></i>';
-                rainStatusText.textContent = 'Clear weather';
-                document.body.style.backgroundImage = 'url("sunny-background.jpg")';
-            } else if (rain === 'Light_Rain') {
-                rainStatusBadge.textContent = 'Light Rain';
-                rainStatusBadge.style.backgroundColor = '#3498db';
-                rainStatusIcon.innerHTML = '<i class="fas fa-cloud-sun-rain"></i>';
-                rainStatusIcon.classList.add('rain-light-animation');
-                rainStatusText.textContent = 'Light rain detected';
-                document.body.style.backgroundImage = 'url("light-rain-background.jpg")';
-                if (!lightRainPopupShown) {
-                    showRainPopup('There is Rain', 'Checkout for clothes outside!');
-                    lightRainPopupShown = true;
-                }
-                sensorActivitiesChart.data.datasets[0].data[6]++;
-            } else if (rain === 'Heavy_Rain') {
-                rainStatusBadge.textContent = 'Heavy Rain';
-                rainStatusBadge.style.backgroundColor = '#2980b9';
-                rainStatusIcon.innerHTML = '<i class="fas fa-cloud-showers-heavy"></i>';
-                rainStatusIcon.classList.add('rain-heavy-animation');
-                rainStatusText.textContent = 'Heavy rain detected';
-                document.body.style.backgroundImage = 'url("heavy-rain-background.jpg")';
-                if (!heavyRainPopupShown) {
-                    showRainPopup('There is Heavy Rain', 'Staying inside is preferred in this bad weather.', true);
-                    heavyRainPopupShown = true;
-                }
-                sensorActivitiesChart.data.datasets[0].data[6]++;
+            // Emergency Button Status
+            const buttonStatusBadge = document.getElementById('buttonStatusBadge');
+            const buttonStatusIcon = document.getElementById('buttonStatusIcon');
+            const buttonStatusText = document.getElementById('buttonStatusText');
+            const emergencyPopup = document.getElementById('emergencyPopup');
+            if (button === 'Button_ON') {
+                buttonStatusBadge.textContent = 'ON';
+                buttonStatusBadge.style.backgroundColor = '#e74c3c';
+                buttonStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                buttonStatusText.textContent = 'Emergency Activated';
+                activateEmergencyMode();
+                emergencyPopup.style.display = 'flex';
+                setTimeout(() => emergencyPopup.classList.add('show'), 10);
+            } else {
+                buttonStatusBadge.textContent = 'OFF';
+                buttonStatusBadge.style.backgroundColor = '#27ae60';
+                buttonStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                buttonStatusText.textContent = 'No Emergency';
+                deactivateEmergencyMode();
+                emergencyPopup.classList.remove('show');
+                setTimeout(() => emergencyPopup.style.display = 'none', 300);
             }
             
-            // Update charts
+            // Update Charts
             temperatureChart.data.datasets[0].data.push(temperature);
             temperatureChart.data.datasets[0].data.shift();
             temperatureChart.data.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
@@ -784,7 +781,7 @@
             temperatureChart.update();
             sensorActivitiesChart.update();
             
-            // Pulse animation
+            // Pulse Animation
             document.querySelectorAll('.card-value').forEach(el => {
                 el.classList.add('pulse');
                 setTimeout(() => el.classList.remove('pulse'), 500);
@@ -793,27 +790,7 @@
             document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
         }
         
-        // Function to show rain popup
-        function showRainPopup(title, message, isHeavy = false) {
-            const popup = document.createElement('div');
-            popup.className = 'popup';
-            popup.innerHTML = `
-                <div class="popup-content ${isHeavy ? 'rain-heavy-popup' : 'rain-popup'}">
-                    <h2>${title}</h2>
-                    <p>${message}</p>
-                    <button class="close-btn" onclick="this.parentElement.parentElement.remove()">Close</button>
-                </div>
-            `;
-            document.body.appendChild(popup);
-            popup.style.display = 'block';
-        }
-        
-        // Close popup function
-        function closePopup() {
-            document.getElementById('firePopup').style.display = 'none';
-        }
-        
-        // Set current year
+        // Set Current Year
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
         // Firebase Initialization
@@ -834,7 +811,7 @@
             const email = document.getElementById('input-email').value;
             const password = document.getElementById('input-password').value;
             firebase.auth().signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
+                .then(() => {
                     document.getElementById('login-container').style.display = 'none';
                     document.getElementById('dashboard-container').style.display = 'block';
                 })
@@ -855,23 +832,33 @@
                 document.getElementById('dashboard-container').style.display = 'block';
                 document.getElementById('user-details').textContent = user.email;
 
-                // Real-time data listener
                 const dbRef = firebase.database().ref('sensors');
                 dbRef.on('value', (snapshot) => {
                     const data = snapshot.val();
-                    if (data) {
-                        updateDashboard(data);
-                    }
-                }, (error) => {
-                    console.error("Database error:", error);
-                });
+                    if (data) updateDashboard(data);
+                }, (error) => console.error("Database error:", error));
             } else {
                 document.getElementById('login-container').style.display = 'block';
                 document.getElementById('authentication-bar').style.display = 'none';
                 document.getElementById('dashboard-container').style.display = 'none';
-                document.getElementById('user-details').textContent = '';
             }
         });
+
+        // Dark Mode Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            temperatureChart.data.datasets[0].borderColor = isDarkMode ? '#ffcc80' : '#f39c12';
+            temperatureChart.update();
+        }
+
+        // Load Saved Theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            temperatureChart.data.datasets[0].borderColor = '#ffcc80';
+            temperatureChart.update();
+        }
     </script>
 </body>
 </html>
