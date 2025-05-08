@@ -1,11 +1,9 @@
-#include <DHT.h>
 #include <SoftwareSerial.h>
 
 // Pin definitions
 #define BUTTON_PIN 2 
 #define FIRE_PIN 3
 #define IR_PIN 4
-#define DHT_PIN 5
 #define VIBRATION_PIN 6    
 #define MOTION_PIN 7
 #define TRIG_PIN 8
@@ -18,26 +16,20 @@
 #define LPG_PIN A2
 #define RAIN A3  
 
-#define DHT_TYPE DHT11
 #define LPG_THRESHOLD 130    
-// Rain threshold constants for 10-bit ADC (0-1023 range)
-
 const int RAIN_THRESHOLD = 750;    // Light rain threshold
 const int HEAVY_RAIN_THRESHOLD = 500;  // Heavy rain threshold
 const int SAMPLE_COUNT = 10;  // Number of samples for rain sensor averaging
 
-DHT dht(DHT_PIN, DHT_TYPE);
 SoftwareSerial esp(RX_PIN, TX_PIN);
 
 String waterLevel, fireStatus, motionStatus, lpgStatus, irSensorStatus, tiltStatus, vibrationStatus, lightStatus, rainStatus, buttonStatus;
-float temperature = 0.0;
 long duration;
 int distanceCm, distancePer;
 
 void setup() {
   Serial.begin(9600);  // For Serial Monitor
   esp.begin(9600);     // For ESP32 communication
-  dht.begin();
   
   pinMode(FIRE_PIN, INPUT);
   pinMode(IR_PIN, INPUT);
@@ -49,8 +41,8 @@ void setup() {
   pinMode(VIBRATION_PIN, INPUT);    
   pinMode(LED_PIN, OUTPUT);
   pinMode(LDR_PIN, INPUT);
-  pinMode(RAIN, INPUT);  // Set rain sensor pin as input
-  pinMode(BUTTON_PIN, INPUT);  // Added button pin setup
+  pinMode(RAIN, INPUT);  
+  pinMode(BUTTON_PIN, INPUT);  
 }
 
 // Function to get averaged rain sensor reading
@@ -87,6 +79,7 @@ void loop() {
   distancePer = map(distanceCm, 10, 0, 0, 100);
   distancePer = constrain(distancePer, 0, 100);
   waterLevel = String(distancePer);
+  
   // Fire Status
   fireStatus = (digitalRead(FIRE_PIN) == LOW) ? "Fire_Detected" : "No_Fire";
 
@@ -95,10 +88,6 @@ void loop() {
 
   // IR Sensor Status
   irSensorStatus = (digitalRead(IR_PIN) == LOW) ? "Door_is_Closed" : "Door_is_Opened";
-
-  // Temperature (DHT11)
-  temperature = dht.readTemperature();
-  if (isnan(temperature)) temperature = 0.0; // Handle invalid readings
 
   // LPG Status
   int gasValue = analogRead(LPG_PIN);
@@ -125,7 +114,6 @@ void loop() {
   Serial.println("--- Sensor Readings ---");
   Serial.println("Water Level: " + waterLevel + "%");
   Serial.println("Motion: " + motionStatus);
-  Serial.println("Temperature: " + String(temperature) + "°C");
   Serial.println("Fire: " + fireStatus);
   Serial.println("LPG: " + lpgStatus);
   Serial.println("IR Sensor: " + irSensorStatus);
@@ -133,11 +121,11 @@ void loop() {
   Serial.println("Vibration: " + vibrationStatus);
   Serial.println("Light: " + lightStatus + "%");
   Serial.println("Rain: " + rainStatus);
-  Serial.println("Button: " + buttonStatus);  // Added button status print
+  Serial.println("Button: " + buttonStatus);
   Serial.println("-----------------------");
 
-  // Send data to ESP32 (now 11 values including button status)
-  String data = waterLevel + "," + motionStatus + "," + String(temperature) + "," + 
+  // Send data to ESP32 
+  String data = waterLevel + "," + motionStatus + "," + 
                 fireStatus + "," + lpgStatus + "," + irSensorStatus + "," + 
                 tiltStatus + "," + vibrationStatus + "," + lightStatus + "," + 
                 rainStatus + "," + buttonStatus + "\n";
