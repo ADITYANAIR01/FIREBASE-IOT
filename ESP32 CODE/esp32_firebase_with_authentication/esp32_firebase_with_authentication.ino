@@ -84,19 +84,19 @@ void uploadToFirebase(String data) {
   // Remove trailing newline or spaces
   data.trim();
   
-  // Parse the string into 11 values (added button)
-  String values[11];
+  // Parse the string into 10 values (temperature removed)
+  String values[10];
   int index = 0;
   int commaIndex;
-  while ((commaIndex = data.indexOf(',')) != -1 && index < 11) {
+  while ((commaIndex = data.indexOf(',')) != -1 && index < 10) {
     values[index] = data.substring(0, commaIndex);
     data = data.substring(commaIndex + 1);
     index++;
   }
-  if (index == 10 && data.length() > 0) {
-    values[10] = data; // Last value (button)
+  if (index == 9 && data.length() > 0) {
+    values[9] = data; // Last value (button)
   } else {
-    Serial.println("Invalid data format - Expected 11 values. Received: " + String(index + 1));
+    Serial.println("Invalid data format - Expected 10 values. Received: " + String(index + 1));
     Serial.println("Raw data: " + data);
     return;
   }
@@ -105,29 +105,27 @@ void uploadToFirebase(String data) {
   Serial.println("--- Received Sensor Data ---");
   Serial.println("Water Level: " + values[0]);
   Serial.println("Motion: " + values[1]);
-  Serial.println("Temperature: " + values[2]);
-  Serial.println("Fire: " + values[3]);
-  Serial.println("LPG: " + values[4]);
-  Serial.println("IR Sensor: " + values[5]);
-  Serial.println("Tilt: " + values[6]);
-  Serial.println("Vibration: " + values[7]);
-  Serial.println("Light: " + values[8]);
-  Serial.println("Rain: " + values[9]);
-  Serial.println("Button: " + values[10]);  
+  Serial.println("Fire: " + values[2]);
+  Serial.println("LPG: " + values[3]);
+  Serial.println("IR Sensor: " + values[4]);
+  Serial.println("Tilt: " + values[5]);
+  Serial.println("Vibration: " + values[6]);
+  Serial.println("Light: " + values[7]);
+  Serial.println("Rain: " + values[8]);
+  Serial.println("Button: " + values[9]);  
   Serial.println("----------------------------");
   
   // Upload to Firebase
   Firebase.RTDB.setInt(&fbdo, "sensors/water_level", values[0].toInt());
   Firebase.RTDB.setString(&fbdo, "sensors/motion", values[1]);
-  Firebase.RTDB.setFloat(&fbdo, "sensors/temperature", values[2].toFloat());
-  Firebase.RTDB.setString(&fbdo, "sensors/fire", values[3]);
-  Firebase.RTDB.setString(&fbdo, "sensors/lpg", values[4]);
-  Firebase.RTDB.setString(&fbdo, "sensors/ir_sensor", values[5]);
-  Firebase.RTDB.setString(&fbdo, "sensors/tilt", values[6]);
-  Firebase.RTDB.setString(&fbdo, "sensors/vibration", values[7]);
-  Firebase.RTDB.setInt(&fbdo, "sensors/light", values[8].toInt());
-  Firebase.RTDB.setString(&fbdo, "sensors/rain", values[9]);
-  Firebase.RTDB.setString(&fbdo, "sensors/button", values[10]);  
+  Firebase.RTDB.setString(&fbdo, "sensors/fire", values[2]);
+  Firebase.RTDB.setString(&fbdo, "sensors/lpg", values[3]);
+  Firebase.RTDB.setString(&fbdo, "sensors/ir_sensor", values[4]);
+  Firebase.RTDB.setString(&fbdo, "sensors/tilt", values[5]);
+  Firebase.RTDB.setString(&fbdo, "sensors/vibration", values[6]);
+  Firebase.RTDB.setInt(&fbdo, "sensors/light", values[7].toInt());
+  Firebase.RTDB.setString(&fbdo, "sensors/rain", values[8]);
+  Firebase.RTDB.setString(&fbdo, "sensors/button", values[9]);  
   Firebase.RTDB.setInt(&fbdo, "sensors/timestamp", millis() / 1000);
   
   if (fbdo.httpCode() == 200) {

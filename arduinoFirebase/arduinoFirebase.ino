@@ -4,12 +4,11 @@
 #define BUTTON_PIN 2 
 #define FIRE_PIN 3
 #define IR_PIN 4
-#define VIBRATION_PIN 6    
-#define MOTION_PIN 7
-#define TRIG_PIN 8
-#define ECHO_PIN 9
-#define TILT_PIN 10
-#define LED_PIN 11
+#define VIBRATION_PIN 5  
+#define MOTION_PIN 6
+#define TRIG_PIN 7
+#define ECHO_PIN 8
+#define TILT_PIN 9
 #define RX_PIN 13
 #define TX_PIN 12
 #define LDR_PIN A1
