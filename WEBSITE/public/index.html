@@ -121,7 +121,7 @@
         }
         .charts-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 20px;
         }
         @media (max-width: 768px) {
@@ -318,24 +318,6 @@
                     </div>
                 </div>
                 
-                <!-- Temperature Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-icon" style="background-color: var(--warning);">
-                            <i class="fas fa-thermometer-half"></i>
-                        </div>
-                        <div class="card-title">Temperature</div>
-                    </div>
-                    <div class="card-value" id="temperature">0°C</div>
-                    <div class="animated-progress">
-                        <div class="progress-bar" id="temperatureBar" style="background: var(--warning);"></div>
-                    </div>
-                    <div class="card-status">
-                        <span class="status-icon" id="temperatureIcon"><i class="fas fa-thermometer-half"></i></span>
-                        <span id="temperatureStatus">Normal</span>
-                    </div>
-                </div>
-                
                 <!-- Light Level Card -->
                 <div class="card">
                     <div class="card-header">
@@ -477,13 +459,6 @@
             <div class="charts-container">
                 <div class="chart-card">
                     <div class="chart-header">
-                        <div class="chart-title">Temperature History</div>
-                    </div>
-                    <canvas id="temperatureChart"></canvas>
-                </div>
-                
-                <div class="chart-card">
-                    <div class="chart-header">
                         <div class="chart-title">Sensor Activities</div>
                     </div>
                     <canvas id="sensorActivitiesChart"></canvas>
@@ -518,38 +493,7 @@
     
     <script>
         // Initialize charts
-        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
         const sensorActivitiesCtx = document.getElementById('sensorActivitiesChart').getContext('2d');
-        
-        function generateTimeLabels(count) {
-            const labels = [];
-            for (let i = count; i >= 0; i--) {
-                const d = new Date();
-                d.setMinutes(d.getMinutes() - i * 10);
-                labels.push(d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-            }
-            return labels;
-        }
-        
-        const temperatureChart = new Chart(temperatureCtx, {
-            type: 'line',
-            data: {
-                labels: generateTimeLabels(6),
-                datasets: [{
-                    label: 'Temperature (°C)',
-                    data: Array(7).fill(0),
-                    borderColor: '#f39c12',
-                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: false, min: 15, max: 40 } }
-            }
-        });
         
         const sensorActivitiesChart = new Chart(sensorActivitiesCtx, {
             type: 'bar',
@@ -590,7 +534,6 @@
         function updateDashboard(data) {
             const waterLevel = data.water_level || 0;
             const motion = data.motion || "No_Motion";
-            const temperature = data.temperature || 0;
             const fire = data.fire || "No_Fire";
             const lpg = data.lpg || "LPG_No_Leakage";
             const irSensor = data.ir_sensor || "Door_is_Closed";
@@ -611,21 +554,6 @@
             } else {
                 document.getElementById('waterLevelStatus').textContent = 'Normal';
                 document.getElementById('waterLevelIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
-            }
-            
-            // Temperature
-            document.getElementById('temperature').textContent = temperature + '°C';
-            const tempPercentage = Math.min(Math.max(temperature * 2, 0), 100);
-            document.getElementById('temperatureBar').style.width = tempPercentage + '%';
-            if (temperature > 30) {
-                document.getElementById('temperatureStatus').textContent = 'High';
-                document.getElementById('temperatureIcon').innerHTML = '<i class="fas fa-fire"></i>';
-            } else if (temperature < 15) {
-                document.getElementById('temperatureStatus').textContent = 'Low';
-                document.getElementById('temperatureIcon').innerHTML = '<i class="fas fa-snowflake"></i>';
-            } else {
-                document.getElementById('temperatureStatus').textContent = 'Normal';
-                document.getElementById('temperatureIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
             }
             
             // Light Level
@@ -774,11 +702,6 @@
             }
             
             // Update Charts
-            temperatureChart.data.datasets[0].data.push(temperature);
-            temperatureChart.data.datasets[0].data.shift();
-            temperatureChart.data.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-            temperatureChart.data.labels.shift();
-            temperatureChart.update();
             sensorActivitiesChart.update();
             
             // Pulse Animation
@@ -849,15 +772,11 @@
             document.body.classList.toggle('dark-mode');
             const isDarkMode = document.body.classList.contains('dark-mode');
             localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-            temperatureChart.data.datasets[0].borderColor = isDarkMode ? '#ffcc80' : '#f39c12';
-            temperatureChart.update();
         }
 
         // Load Saved Theme
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
-            temperatureChart.data.datasets[0].borderColor = '#ffcc80';
-            temperatureChart.update();
         }
     </script>
 </body>
