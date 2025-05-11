@@ -22,6 +22,12 @@
             --card-bg: white;
             --progress-bg: #eee;
             --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --rain-primary: #4682b4;
+            --rain-accent: #87ceeb;
+            --rain-dark: #2f4f4f;
+            --window-closed: #27ae60;
+            --window-open: #e74c3c;
+            --vibration-line: #8e44ad;
         }
         body.dark-mode {
             --background: #1a1a1a;
@@ -29,6 +35,12 @@
             --card-bg: #2c2c2c;
             --progress-bg: #333;
             --shadow: 0 4px 12px rgba(0,0,0,0.3);
+            --rain-primary: #5f9ea0;
+            --rain-accent: #b0e0e6;
+            --rain-dark: #4682b4;
+            --window-closed: #2ecc71;
+            --window-open: #c0392b;
+            --vibration-line: #9b59b6;
         }
         * {
             margin: 0;
@@ -40,6 +52,8 @@
             background-color: var(--background);
             color: var(--text);
             transition: background-color 0.5s ease;
+            position: relative;
+            overflow-x: hidden;
         }
         .container {
             max-width: 1200px;
@@ -73,14 +87,16 @@
             gap: 20px;
             margin-bottom: 30px;
         }
-        .card {
+        .sensor-card {
             background: var(--card-bg);
             border-radius: 10px;
             box-shadow: var(--shadow);
             padding: 20px;
-            transition: all 0.3s ease;
+            transition: all 0.3s ease, background 0.7s ease-in-out;
+            position: relative;
+            overflow: hidden;
         }
-        .card:hover {
+        .sensor-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0,0,0,0.1);
         }
@@ -166,6 +182,7 @@
             font-size: 14px;
             font-weight: 600;
             color: white;
+            transition: background-color 0.7s ease-in-out;
         }
         .footer {
             text-align: center;
@@ -223,7 +240,7 @@
             font-size: 18px;
             margin-bottom: 20px;
         }
-        .popup-content .fire-logo {
+        .popup-content .fire-logo, .popup-content .rain-logo {
             font-size: 50px;
             color: var(--danger);
             animation: flicker 1s infinite;
@@ -254,13 +271,185 @@
             50% { background-color: #ff6666; }
             100% { background-color: #ffcccc; }
         }
-        .emergency-mode .card {
+        .emergency-mode .sensor-card {
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
         }
         .theme-toggle {
             cursor: pointer;
             font-size: 24px;
             color: var(--primary);
+        }
+        /* Smoother Rain Animation */
+        .rain-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: var(--rain-accent);
+            opacity: 0.5;
+            animation: fall 1s ease-in-out infinite;
+        }
+        .light-rain .raindrop {
+            animation-duration: 2s;
+            height: 15px;
+            opacity: 0.6;
+        }
+        .heavy-rain .raindrop {
+            animation-duration: 0.8s;
+            height: 30px;
+            opacity: 0.9;
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(100vh) rotate(10deg);
+                opacity: 0.3;
+            }
+        }
+        /* Sensor Card Gradients */
+        .water-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        .light-card {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+        }
+        .fire-card.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .fire-card.safe {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .motion-card.active {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .motion-card.inactive {
+            background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+        }
+        .door-card.open {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        .door-card.closed {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .lpg-card.danger {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+        .lpg-card.safe {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .window-card.window-open {
+            background: linear-gradient(135deg, var(--window-open), #f1c40f);
+        }
+        .window-card.window-closed {
+            background: linear-gradient(135deg, var(--window-closed), #3498db);
+        }
+        .vibration-card.vibration-detected {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+        }
+        .vibration-card.no-vibration {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .emergency-card.on {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .emergency-card.off {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .rain-card.light-rain {
+            background: linear-gradient(135deg, #4682b4, #87ceeb);
+        }
+        .rain-card.heavy-rain {
+            background: linear-gradient(135deg, #4682b4, #2f4f4f);
+        }
+        .rain-card.no-rain {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        /* Enhanced Window Status Styling and Animation */
+        .window-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .window-icon {
+            font-size: 24px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            transition: transform 0.7s ease-in-out;
+            will-change: transform;
+        }
+        .window-open .window-icon {
+            transform: rotateY(180deg) scale(1.15);
+        }
+        .window-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--window-closed);
+            display: inline-block;
+            margin-left: 10px;
+            transition: background 0.7s ease-in-out;
+        }
+        .window-open .window-status-dot {
+            background: var(--window-open);
+            animation: glow 0.8s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px var(--window-open); }
+            50% { box-shadow: 0 0 15px var(--window-open); }
+            100% { box-shadow: 0 0 5px var(--window-open); }
+        }
+        .window-info {
+            font-size: 12px;
+            color: #555;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .window-info.show {
+            opacity: 1;
+        }
+        .window-context {
+            font-size: 14px;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            margin: 5px 0;
+        }
+        /* Seismograph for Vibration */
+        .seismograph {
+            width: 100%;
+            height: 30px;
+            position: relative;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .seismograph-line {
+            stroke: var(--vibration-line);
+            stroke-width: 2;
+            fill: none;
+        }
+        .vibration-detected .seismograph-line {
+            animation: vibrate 0.5s infinite;
+        }
+        @keyframes vibrate {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(-5px); }
+            50% { transform: translateY(5px); }
+            75% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        .vibration-chart {
+            width: 100%;
+            height: 80px;
         }
     </style>
 </head>
@@ -301,16 +490,16 @@
             
             <div class="dashboard">
                 <!-- Water Level Card -->
-                <div class="card">
+                <div class="sensor-card water-card">
                     <div class="card-header">
-                        <div class="card-icon" style="background-color: var(--primary);">
+                        <div class="card-icon" style="background-color: #3498db;">
                             <i class="fas fa-water"></i>
                         </div>
                         <div class="card-title">Water Level</div>
                     </div>
                     <div class="card-value" id="waterLevel">0%</div>
                     <div class="animated-progress">
-                        <div class="progress-bar" id="waterLevelBar" style="background: var(--primary);"></div>
+                        <div class="progress-bar" id="waterLevelBar" style="background: #3498db;"></div>
                     </div>
                     <div class="card-status">
                         <span class="status-icon" id="waterLevelIcon"><i class="fas fa-tint"></i></span>
@@ -319,7 +508,7 @@
                 </div>
                 
                 <!-- Light Level Card -->
-                <div class="card">
+                <div class="sensor-card light-card">
                     <div class="card-header">
                         <div class="card-icon" style="background-color: #f1c40f;">
                             <i class="fas fa-lightbulb"></i>
@@ -337,9 +526,9 @@
                 </div>
                 
                 <!-- Fire Status Card -->
-                <div class="card">
+                <div class="sensor-card fire-card safe" id="fireCard">
                     <div class="card-header">
-                        <div class="card-icon" style="background-color: var(--danger);">
+                        <div class="card-icon" style="background-color: #e74c3c;">
                             <i class="fas fa-fire"></i>
                         </div>
                         <div class="card-title">Fire Status</div>
@@ -354,9 +543,9 @@
                 </div>
                 
                 <!-- Motion Status Card -->
-                <div class="card">
+                <div class="sensor-card motion-card inactive" id="motionCard">
                     <div class="card-header">
-                        <div class="card-icon" style="background-color: var(--secondary);">
+                        <div class="card-icon" style="background-color: #2ecc71;">
                             <i class="fas fa-walking"></i>
                         </div>
                         <div class="card-title">Motion Status</div>
@@ -371,7 +560,7 @@
                 </div>
                 
                 <!-- Door Status Card -->
-                <div class="card">
+                <div class="sensor-card door-card closed" id="doorCard">
                     <div class="card-header">
                         <div class="card-icon" style="background-color: #9b59b6;">
                             <i class="fas fa-door-open"></i>
@@ -388,7 +577,7 @@
                 </div>
                 
                 <!-- LPG Status Card -->
-                <div class="card">
+                <div class="sensor-card lpg-card safe" id="lpgCard">
                     <div class="card-header">
                         <div class="card-icon" style="background-color: #e67e22;">
                             <i class="fas fa-burn"></i>
@@ -404,25 +593,31 @@
                     </div>
                 </div>
                 
-                <!-- Tilt Status Card -->
-                <div class="card">
+                <!-- Enhanced Window Status Card -->
+                <div class="sensor-card window-card window-closed" id="windowCard">
                     <div class="card-header">
                         <div class="card-icon" style="background-color: #16a085;">
-                            <i class="fas fa-level-down-alt"></i>
+                            <i class="fas fa-window-restore window-icon"></i>
                         </div>
-                        <div class="card-title">Tilt Status</div>
+                        <div class="card-title">Window Status</div>
+                        <span class="window-status-dot"></span>
                     </div>
                     <div class="card-value">
-                        <span class="status-badge" id="tiltStatusBadge" style="background-color: #27ae60;">No Tilt</span>
+                        <span class="status-badge" id="windowStatusBadge" style="background-color: #27ae60;">Closed</span>
                     </div>
-                    <div class="card-status" style="margin-top: 20px;">
-                        <span class="status-icon" id="tiltStatusIcon"><i class="fas fa-check-circle"></i></span>
-                        <span id="tiltStatusText">Structure stable</span>
+                    <div class="window-context" id="windowContext">Secure: Window is closed</div>
+                    <div class="card-status" style="margin-top: 10px;">
+                        <span class="status-icon" id="windowStatusIcon"><i class="fas fa-check-circle"></i></span>
+                        <span id="windowStatusText">Window is closed</span>
+                    </div>
+                    <div class="window-info" id="windowInfo">
+                        <span id="windowLastChange">Last changed: --</span><br>
+                        <span id="windowEventCount">Open events (last hour): 0</span>
                     </div>
                 </div>
                 
-                <!-- Vibration Status Card -->
-                <div class="card">
+                <!-- Vibration Status Card with Seismograph -->
+                <div class="sensor-card vibration-card no-vibration" id="vibrationCard">
                     <div class="card-header">
                         <div class="card-icon" style="background-color: #8e44ad;">
                             <i class="fas fa-wave-square"></i>
@@ -432,16 +627,24 @@
                     <div class="card-value">
                         <span class="status-badge" id="vibrationStatusBadge" style="background-color: #27ae60;">No Vibration</span>
                     </div>
-                    <div class="card-status" style="margin-top: 20px;">
+                    <div class="seismograph">
+                        <svg width="100%" height="30">
+                            <path class="seismograph-line" d="M0,15 Q25,15 50,15 T100,15" />
+                        </svg>
+                    </div>
+                    <div class="vibration-chart">
+                        <canvas id="vibrationChart"></canvas>
+                    </div>
+                    <div class="card-status" style="margin-top: 10px;">
                         <span class="status-icon" id="vibrationStatusIcon"><i class="fas fa-check-circle"></i></span>
                         <span id="vibrationStatusText">All quiet</span>
                     </div>
                 </div>
                 
                 <!-- Emergency Button Card -->
-                <div class="card">
+                <div class="sensor-card emergency-card off" id="emergencyCard">
                     <div class="card-header">
-                        <div class="card-icon" style="background-color: var(--danger);">
+                        <div class="card-icon" style="background-color: #e74c3c;">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="card-title">Emergency Button</div>
@@ -452,6 +655,23 @@
                     <div class="card-status" style="margin-top: 20px;">
                         <span class="status-icon" id="buttonStatusIcon"><i class="fas fa-check-circle"></i></span>
                         <span id="buttonStatusText">No Emergency</span>
+                    </div>
+                </div>
+                
+                <!-- Rain Sensor Card -->
+                <div class="sensor-card rain-card no-rain" id="rainCard">
+                    <div class="card-header">
+                        <div class="card-icon" style="background-color: #4682b4;">
+                            <i class="fas fa-cloud-rain"></i>
+                        </div>
+                        <div class="card-title">Rain Status</div>
+                    </div>
+                    <div class="card-value">
+                        <span class="status-badge" id="rainStatusBadge" style="background-color: #27ae60;">No Rain</span>
+                    </div>
+                    <div class="card-status" style="margin-top: 20px;">
+                        <span class="status-icon" id="rainStatusIcon"><i class="fas fa-check-circle"></i></span>
+                        <span id="rainStatusText">No precipitation</span>
                     </div>
                 </div>
             </div>
@@ -484,11 +704,34 @@
         <div class="popup" id="emergencyPopup">
             <div class="popup-content" style="background: #ffe6e6;">
                 <h2>Emergency Alert!</h2>
-                <i class="fas fa-exclamation-triangle fire-logo" style="color: var(--danger);"></i>
+                <i class="fas fa-exclamation-triangle fire-logo" style="color: #e74c3c;"></i>
                 <p>The emergency button has been pressed. Please check the situation immediately.</p>
                 <button class="close-btn" onclick="closePopup('emergencyPopup')">Close</button>
             </div>
         </div>
+        
+        <!-- Light Rain Popup -->
+        <div class="popup" id="lightRainPopup">
+            <div class="popup-content" style="background: linear-gradient(135deg, #87ceeb, #4682b4);">
+                <h2 style="color: #2f4f4f;">Rain Detected!</h2>
+                <i class="fas fa-cloud-rain rain-logo" style="color: #2f4f4f;"></i>
+                <p style="color: #2f4f4f;">Check for clothes outside, it might get wet.</p>
+                <button class="close-btn" style="background: #2f4f4f;" onclick="closePopup('lightRainPopup')">Close</button>
+            </div>
+        </div>
+        
+        <!-- Heavy Rain Popup -->
+        <div class="popup" id="heavyRainPopup">
+            <div class="popup-content" style="background: linear-gradient(135deg, #4682b4, #2f4f4f);">
+                <h2 style="color: #ecf0f1;">Heavy Rain Detected!</h2>
+                <i class="fas fa-cloud-showers-heavy rain-logo" style="color: #ecf0f1;"></i>
+                <p style="color: #ecf0f1;">It is advised to stay inside the house.</p>
+                <button class="close-btn" style="background: #2f4f4f;" onclick="closePopup('heavyRainPopup')">Close</button>
+            </div>
+        </div>
+        
+        <!-- Rain Animation Container -->
+        <div id="rainBackground" class="rain-background" style="display: none;"></div>
     </div>
     
     <script>
@@ -498,11 +741,11 @@
         const sensorActivitiesChart = new Chart(sensorActivitiesCtx, {
             type: 'bar',
             data: {
-                labels: ['Motion', 'Door', 'Fire', 'LPG', 'Tilt', 'Vibration'],
+                labels: ['Motion', 'Door', 'Fire', 'LPG', 'Window', 'Vibration', 'Rain'],
                 datasets: [{
                     label: 'Activities (last hour)',
-                    data: [0, 0, 0, 0, 0, 0],
-                    backgroundColor: ['#2ecc71', '#9b59b6', '#e74c3c', '#e67e22', '#16a085', '#8e44ad']
+                    data: [0, 0, 0, 0, 0, 0, 0],
+                    backgroundColor: ['#2ecc71', '#9b59b6', '#e74c3c', '#e67e22', '#16a085', '#8e44ad', '#4682b4']
                 }]
             },
             options: {
@@ -511,6 +754,39 @@
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
             }
         });
+
+        // Initialize Vibration Chart (Seismograph)
+        const vibrationChartCtx = document.getElementById('vibrationChart').getContext('2d');
+        const vibrationData = {
+            labels: Array(10).fill(''),
+            datasets: [{
+                label: 'Vibration Intensity',
+                data: Array(10).fill(0),
+                borderColor: 'var(--vibration-line)',
+                backgroundColor: 'rgba(142, 68, 173, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        };
+        const vibrationChart = new Chart(vibrationChartCtx, {
+            type: 'line',
+            data: vibrationData,
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 10, display: false },
+                    x: { display: false }
+                },
+                animation: { duration: 500 }
+            }
+        });
+
+        // Window Status Tracking
+        let lastWindowStatus = null;
+        let lastChangeTime = null;
+        let windowEventCount = 0;
+        let lastHourReset = Date.now();
 
         // Emergency Mode Functions
         function activateEmergencyMode() {
@@ -530,6 +806,33 @@
             }, 300);
         }
 
+        // Smoother Rain Animation Function
+        function createRaindrops(intensity) {
+            const rainBackground = document.getElementById('rainBackground');
+            rainBackground.innerHTML = '';
+            rainBackground.style.display = 'block';
+            const count = intensity === 'light' ? 100 : 200;
+            for (let i = 0; i < count; i++) {
+                const raindrop = document.createElement('div');
+                raindrop.className = 'raindrop';
+                raindrop.style.left = `${Math.random() * 100}vw`;
+                raindrop.style.width = `${Math.random() * 2 + 1}px`;
+                raindrop.style.height = `${Math.random() * 20 + 10}px`;
+                raindrop.style.opacity = Math.random() * 0.5 + 0.2;
+                raindrop.style.animationDuration = `${Math.random() * 1 + 0.5}s`;
+                raindrop.style.animationDelay = `${Math.random() * 2}s`;
+                rainBackground.appendChild(raindrop);
+            }
+            document.body.classList.add(intensity + '-rain');
+        }
+
+        function removeRaindrops() {
+            const rainBackground = document.getElementById('rainBackground');
+            rainBackground.innerHTML = '';
+            rainBackground.style.display = 'none';
+            document.body.classList.remove('light-rain', 'heavy-rain');
+        }
+
         // Update Dashboard Function
         function updateDashboard(data) {
             const waterLevel = data.water_level || 0;
@@ -541,6 +844,7 @@
             const vibration = data.vibration || "No_Vibration";
             const light = data.light || 0;
             const button = data.button || "Button_OFF";
+            const rain = data.rain || "No_Rain";
 
             // Water Level
             document.getElementById('waterLevel').textContent = waterLevel + '%';
@@ -571,6 +875,7 @@
             }
             
             // Fire Status
+            const fireCard = document.getElementById('fireCard');
             const fireStatusBadge = document.getElementById('fireStatusBadge');
             const fireStatusIcon = document.getElementById('fireStatusIcon');
             const fireStatusText = document.getElementById('fireStatusText');
@@ -579,6 +884,8 @@
                 fireStatusBadge.style.backgroundColor = '#e74c3c';
                 fireStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 fireStatusText.textContent = 'Emergency! Fire detected';
+                fireCard.classList.remove('safe');
+                fireCard.classList.add('danger');
                 sensorActivitiesChart.data.datasets[0].data[2]++;
                 const firePopup = document.getElementById('firePopup');
                 firePopup.style.display = 'flex';
@@ -588,80 +895,133 @@
                 fireStatusBadge.style.backgroundColor = '#27ae60';
                 fireStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 fireStatusText.textContent = 'All clear';
+                fireCard.classList.remove('danger');
+                fireCard.classList.add('safe');
                 const firePopup = document.getElementById('firePopup');
                 firePopup.classList.remove('show');
                 setTimeout(() => firePopup.style.display = 'none', 300);
             }
             
             // Motion Status
+            const motionCard = document.getElementById('motionCard');
             const motionStatusBadge = document.getElementById('motionStatusBadge');
             const motionStatusIcon = document.getElementById('motionStatusIcon');
             const motionStatusText = document.getElementById('motionStatusText');
             if (motion === 'Motion_Detected') {
                 motionStatusBadge.textContent = 'Motion Detected';
-                motionStatusBadge.style.backgroundColor = '#3498db';
+                motionStatusBadge.style.backgroundColor = '#2ecc71';
                 motionStatusIcon.innerHTML = '<i class="fas fa-running"></i>';
                 motionStatusText.textContent = 'Movement detected';
+                motionCard.classList.remove('inactive');
+                motionCard.classList.add('active');
                 sensorActivitiesChart.data.datasets[0].data[0]++;
             } else {
                 motionStatusBadge.textContent = 'No Motion';
                 motionStatusBadge.style.backgroundColor = '#7f8c8d';
                 motionStatusIcon.innerHTML = '<i class="fas fa-pause-circle"></i>';
                 motionStatusText.textContent = 'No movement detected';
+                motionCard.classList.remove('active');
+                motionCard.classList.add('inactive');
             }
             
             // Door Status
+            const doorCard = document.getElementById('doorCard');
             const doorStatusBadge = document.getElementById('doorStatusBadge');
             const doorStatusIcon = document.getElementById('doorStatusIcon');
             const doorStatusText = document.getElementById('doorStatusText');
             if (irSensor === 'Door_is_Opened') {
                 doorStatusBadge.textContent = 'Open';
-                doorStatusBadge.style.backgroundColor = '#3498db';
+                doorStatusBadge.style.backgroundColor = '#9b59b6';
                 doorStatusIcon.innerHTML = '<i class="fas fa-door-open"></i>';
                 doorStatusText.textContent = 'Door is open';
+                doorCard.classList.remove('closed');
+                doorCard.classList.add('open');
                 sensorActivitiesChart.data.datasets[0].data[1]++;
             } else {
                 doorStatusBadge.textContent = 'Closed';
                 doorStatusBadge.style.backgroundColor = '#27ae60';
                 doorStatusIcon.innerHTML = '<i class="fas fa-door-closed"></i>';
                 doorStatusText.textContent = 'Door is secure';
+                doorCard.classList.remove('open');
+                doorCard.classList.add('closed');
             }
             
             // LPG Status
+            const lpgCard = document.getElementById('lpgCard');
             const lpgStatusBadge = document.getElementById('lpgStatusBadge');
             const lpgStatusIcon = document.getElementById('lpgStatusIcon');
             const lpgStatusText = document.getElementById('lpgStatusText');
             if (lpg === 'LPG_Leak_Detected') {
                 lpgStatusBadge.textContent = 'Leak Detected';
-                lpgStatusBadge.style.backgroundColor = '#e74c3c';
+                lpgStatusBadge.style.backgroundColor = '#e67e22';
                 lpgStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 lpgStatusText.textContent = 'Warning! Gas leak detected';
+                lpgCard.classList.remove('safe');
+                lpgCard.classList.add('danger');
                 sensorActivitiesChart.data.datasets[0].data[3]++;
             } else {
                 lpgStatusBadge.textContent = 'No Leakage';
                 lpgStatusBadge.style.backgroundColor = '#27ae60';
                 lpgStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 lpgStatusText.textContent = 'Air quality normal';
+                lpgCard.classList.remove('danger');
+                lpgCard.classList.add('safe');
             }
             
-            // Tilt Status
-            const tiltStatusBadge = document.getElementById('tiltStatusBadge');
-            const tiltStatusIcon = document.getElementById('tiltStatusIcon');
-            const tiltStatusText = document.getElementById('tiltStatusText');
+            // Enhanced Window Status
+            const windowCard = document.getElementById('windowCard');
+            const windowStatusBadge = document.getElementById('windowStatusBadge');
+            const windowStatusIcon = document.getElementById('windowStatusIcon');
+            const windowStatusText = document.getElementById('windowStatusText');
+            const windowContext = document.getElementById('windowContext');
+            const windowInfo = document.getElementById('windowInfo');
+            const windowLastChange = document.getElementById('windowLastChange');
+            const windowEventCountEl = document.getElementById('windowEventCount');
+            
+            // Reset event count every hour
+            if (Date.now() - lastHourReset > 3600000) {
+                windowEventCount = 0;
+                sensorActivitiesChart.data.datasets[0].data[4] = 0;
+                lastHourReset = Date.now();
+            }
+            
             if (tilt === 'Tilt_Detected') {
-                tiltStatusBadge.textContent = 'Tilt Detected';
-                tiltStatusBadge.style.backgroundColor = '#e74c3c';
-                tiltStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-                tiltStatusText.textContent = 'Warning! Structure tilted';
-                sensorActivitiesChart.data.datasets[0].data[4]++;
+                windowStatusBadge.textContent = 'Open';
+                windowStatusBadge.style.backgroundColor = 'var(--window-open)';
+                windowStatusIcon.innerHTML = '<i class="fas fa-window-restore window-icon"></i>';
+                windowStatusText.textContent = 'Window is open';
+                windowContext.textContent = 'Warning: Window is open, check for security';
+                windowCard.classList.add('window-open');
+                windowCard.classList.remove('window-closed');
+                if (lastWindowStatus !== 'Tilt_Detected') {
+                    lastChangeTime = new Date();
+                    windowEventCount++;
+                    sensorActivitiesChart.data.datasets[0].data[4]++;
+                    windowLastChange.textContent = `Last opened: ${lastChangeTime.toLocaleTimeString()}`;
+                    windowEventCountEl.textContent = `Open events (last hour): ${windowEventCount}`;
+                    windowInfo.classList.remove('show');
+                    setTimeout(() => windowInfo.classList.add('show'), 10);
+                }
             } else {
-                tiltStatusBadge.textContent = 'No Tilt';
-                tiltStatusBadge.style.backgroundColor = '#27ae60';
-                tiltStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
-                tiltStatusText.textContent = 'Structure stable';
+                windowStatusBadge.textContent = 'Closed';
+                windowStatusBadge.style.backgroundColor = 'var(--window-closed)';
+                windowStatusIcon.innerHTML = '<i class="fas fa-window-restore window-icon"></i>';
+                windowStatusText.textContent = 'Window is closed';
+                windowContext.textContent = 'Secure: Window is closed';
+                windowCard.classList.add('window-closed');
+                windowCard.classList.remove('window-open');
+                if (lastWindowStatus === 'Tilt_Detected') {
+                    lastChangeTime = new Date();
+                    windowLastChange.textContent = `Last closed: ${lastChangeTime.toLocaleTimeString()}`;
+                    windowEventCountEl.textContent = `Open events (last hour): ${windowEventCount}`;
+                    windowInfo.classList.remove('show');
+                    setTimeout(() => windowInfo.classList.add('show'), 10);
+                }
             }
+            lastWindowStatus = tilt;
             
-            // Vibration Status
+            // Vibration Status with Seismograph
+            const vibrationCard = document.getElementById('vibrationCard');
             const vibrationStatusBadge = document.getElementById('vibrationStatusBadge');
             const vibrationStatusIcon = document.getElementById('vibrationStatusIcon');
             const vibrationStatusText = document.getElementById('vibrationStatusText');
@@ -670,15 +1030,26 @@
                 vibrationStatusBadge.style.backgroundColor = '#e74c3c';
                 vibrationStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 vibrationStatusText.textContent = 'Warning! Vibration detected';
+                vibrationCard.classList.add('vibration-detected');
+                vibrationCard.classList.remove('no-vibration');
                 sensorActivitiesChart.data.datasets[0].data[5]++;
+                vibrationData.datasets[0].data.shift();
+                vibrationData.datasets[0].data.push(Math.random() * 8 + 2);
+                vibrationChart.update();
             } else {
                 vibrationStatusBadge.textContent = 'No Vibration';
                 vibrationStatusBadge.style.backgroundColor = '#27ae60';
                 vibrationStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 vibrationStatusText.textContent = 'All quiet';
+                vibrationCard.classList.add('no-vibration');
+                vibrationCard.classList.remove('vibration-detected');
+                vibrationData.datasets[0].data.shift();
+                vibrationData.datasets[0].data.push(0);
+                vibrationChart.update();
             }
             
             // Emergency Button Status
+            const emergencyCard = document.getElementById('emergencyCard');
             const buttonStatusBadge = document.getElementById('buttonStatusBadge');
             const buttonStatusIcon = document.getElementById('buttonStatusIcon');
             const buttonStatusText = document.getElementById('buttonStatusText');
@@ -688,6 +1059,8 @@
                 buttonStatusBadge.style.backgroundColor = '#e74c3c';
                 buttonStatusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
                 buttonStatusText.textContent = 'Emergency Activated';
+                emergencyCard.classList.add('on');
+                emergencyCard.classList.remove('off');
                 activateEmergencyMode();
                 emergencyPopup.style.display = 'flex';
                 setTimeout(() => emergencyPopup.classList.add('show'), 10);
@@ -696,9 +1069,60 @@
                 buttonStatusBadge.style.backgroundColor = '#27ae60';
                 buttonStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
                 buttonStatusText.textContent = 'No Emergency';
+                emergencyCard.classList.add('off');
+                emergencyCard.classList.remove('on');
                 deactivateEmergencyMode();
                 emergencyPopup.classList.remove('show');
                 setTimeout(() => emergencyPopup.style.display = 'none', 300);
+            }
+            
+            // Rain Status
+            const rainCard = document.getElementById('rainCard');
+            const rainStatusBadge = document.getElementById('rainStatusBadge');
+            const rainStatusIcon = document.getElementById('rainStatusIcon');
+            const rainStatusText = document.getElementById('rainStatusText');
+            const lightRainPopup = document.getElementById('lightRainPopup');
+            const heavyRainPopup = document.getElementById('heavyRainPopup');
+            if (rain === 'Light_Rain') {
+                rainStatusBadge.textContent = 'Light Rain';
+                rainStatusBadge.style.backgroundColor = '#4682b4';
+                rainStatusIcon.innerHTML = '<i class="fas fa-cloud-rain"></i>';
+                rainStatusText.textContent = 'Light precipitation detected';
+                rainCard.classList.add('light-rain');
+                rainCard.classList.remove('heavy-rain', 'no-rain');
+                sensorActivitiesChart.data.datasets[0].data[6]++;
+                lightRainPopup.style.display = 'flex';
+                setTimeout(() => lightRainPopup.classList.add('show'), 10);
+                heavyRainPopup.classList.remove('show');
+                setTimeout(() => heavyRainPopup.style.display = 'none', 300);
+                createRaindrops('light');
+            } else if (rain === 'Heavy_Rain') {
+                rainStatusBadge.textContent = 'Heavy Rain';
+                rainStatusBadge.style.backgroundColor = '#2f4f4f';
+                rainStatusIcon.innerHTML = '<i class="fas fa-cloud-showers-heavy"></i>';
+                rainStatusText.textContent = 'Heavy precipitation detected';
+                rainCard.classList.add('heavy-rain');
+                rainCard.classList.remove('light-rain', 'no-rain');
+                sensorActivitiesChart.data.datasets[0].data[6]++;
+                heavyRainPopup.style.display = 'flex';
+                setTimeout(() => heavyRainPopup.classList.add('show'), 10);
+                lightRainPopup.classList.remove('show');
+                setTimeout(() => lightRainPopup.style.display = 'none', 300);
+                createRaindrops('heavy');
+            } else {
+                rainStatusBadge.textContent = 'No Rain';
+                rainStatusBadge.style.backgroundColor = '#27ae60';
+                rainStatusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                rainStatusText.textContent = 'No precipitation';
+                rainCard.classList.add('no-rain');
+                rainCard.classList.remove('light-rain', 'heavy-rain');
+                lightRainPopup.classList.remove('show');
+                heavyRainPopup.classList.remove('show');
+                setTimeout(() => {
+                    lightRainPopup.style.display = 'none';
+                    heavyRainPopup.style.display = 'none';
+                }, 300);
+                removeRaindrops();
             }
             
             // Update Charts
