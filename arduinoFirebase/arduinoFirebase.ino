@@ -9,7 +9,7 @@
 #define TRIG_PIN 7
 #define ECHO_PIN 8
 #define TILT_PIN 9
-#define RX_PIN 13
+#define RX_PIN 0
 #define TX_PIN 12
 #define LDR_PIN A1
 #define LPG_PIN A2
@@ -38,7 +38,6 @@ void setup() {
   pinMode(ECHO_PIN, INPUT);
   pinMode(TILT_PIN, INPUT);
   pinMode(VIBRATION_PIN, INPUT);    
-  pinMode(LED_PIN, OUTPUT);
   pinMode(LDR_PIN, INPUT);
   pinMode(RAIN, INPUT);  
   pinMode(BUTTON_PIN, INPUT);  

@@ -5,8 +5,8 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 // Network credentials
-#define WIFI_SSID "NOTHING"
-#define WIFI_PASSWORD "123456789"
+#define WIFI_SSID "THE NAIR'S"
+#define WIFI_PASSWORD "adityanair52004"
 // Firebase credentials
 #define API_KEY "AIzaSyBapu1aKdh4VX64t5dgfHxkmHDM6EdKstU"
 #define DATABASE_URL "https://iot-sensor-dashboard-2025-default-rtdb.asia-southeast1.firebasedatabase.app/"
@@ -94,7 +94,7 @@ void uploadToFirebase(String data) {
     index++;
   }
   if (index == 9 && data.length() > 0) {
-    values[9] = data; // Last value (button)
+    values[9] = data; 
   } else {
     Serial.println("Invalid data format - Expected 10 values. Received: " + String(index + 1));
     Serial.println("Raw data: " + data);
