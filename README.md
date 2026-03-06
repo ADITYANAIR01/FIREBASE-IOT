@@ -363,7 +363,3 @@ sensors/
 - **Anonymous sign-up (Option B):** Allows any client with the API key to write to the database. Use the authenticated variant for any internet-facing deployment.
 
 ---
-
-## License
-
-This project is released for educational and personal use. No explicit license file is included — please contact the repository owner before using this code commercially or redistributing it.
